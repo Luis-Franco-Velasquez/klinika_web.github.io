@@ -78,11 +78,11 @@
         </form>
 
         <!-- SEARCH / FILTER -->
-        <div class="filter-search row mb-3">
+        <div class="filter-search row mb-3 align-items-center">
             <h5 class="col-12">Search / Filter</h5>
-            <div class="col-12 col-md-4 mb-2 mb-md-0">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search by Name or Date"
-                    oninput="renderFiltered()">
+            <div class="col-12 col-md-4 mb-2 mb-md-0 d-flex">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by Name or Date">
+                <button type="button" class="btn btn-primary ms-2" onclick="renderFiltered()">Search</button>
             </div>
             <div class="col-12 col-md-4">
                 <select id="filterType" class="form-select" onchange="renderFiltered()">
@@ -286,6 +286,14 @@
             document.getElementById("doctorName").value = patient.doctorName;
             document.getElementById("doctorType").value = patient.doctorType;
         };
+
+        // SEARCH ENTER KEY
+        document.getElementById("searchInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                renderFiltered();
+            }
+        });
     </script>
 
 </body>
