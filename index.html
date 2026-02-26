@@ -52,6 +52,10 @@
         .delete-btn {
             background: red;
         }
+
+        .edit-btn {
+            background: orange;
+        }
     </style>
 </head>
 
@@ -85,9 +89,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 🔹 Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCzmst_7XakIWC47G-XiI2wti3iJ6h1tos",
             authDomain: "klinika-ni-san-nicolas.firebaseapp.com",
@@ -102,7 +105,9 @@
         const db = getFirestore(app);
         const table = document.getElementById("patientTable");
 
-        // ================= ADD PATIENT =================
+        let editId = null; // Track which record is being edited
+
+        // ================= ADD / UPDATE PATIENT =================
         window.addPatient = async function () {
             const years = document.getElementById("ageYears").value;
             const months = document.getElementById("ageMonths").value;
@@ -122,11 +127,19 @@
             }
 
             try {
-                await addDoc(collection(db, "patients"), patient);
+                if (editId) {
+                    // Confirm before updating
+                    if (confirm("Are you sure you want to update this record?")) {
+                        await updateDoc(doc(db, "patients", editId), patient);
+                        editId = null;
+                    }
+                } else {
+                    await addDoc(collection(db, "patients"), patient);
+                }
                 document.querySelectorAll("input").forEach(input => input.value = "");
             } catch (error) {
-                console.error("Error adding patient:", error);
-                alert("Failed to add patient. Check console for errors.");
+                console.error("Error adding/updating patient:", error);
+                alert("Failed. Check console for errors.");
             }
         };
 
@@ -144,6 +157,7 @@
                         <td>${data.contact}</td>
                         <td>${data.sick || ""}</td>
                         <td>
+                            <button class="edit-btn" onclick="editPatient('${docSnap.id}')">Edit</button>
                             <button class="delete-btn" onclick="deletePatient('${docSnap.id}')">Delete</button>
                         </td>
                     </tr>
@@ -153,13 +167,39 @@
 
         // ================= DELETE =================
         window.deletePatient = async function (id) {
-            try {
-                await deleteDoc(doc(db, "patients", id));
-            } catch (error) {
-                console.error("Error deleting patient:", error);
+            if (confirm("Are you sure you want to delete this record?")) {
+                try {
+                    await deleteDoc(doc(db, "patients", id));
+                } catch (error) {
+                    console.error("Error deleting patient:", error);
+                }
             }
         };
-    </script>
 
+        // ================= EDIT =================
+        window.editPatient = function (id) {
+            const patientDoc = doc(db, "patients", id);
+            editId = id;
+
+            onSnapshot(patientDoc, (snap) => {
+                const data = snap.data();
+                if (data) {
+                    document.getElementById("date").value = data.date;
+                    document.getElementById("name").value = data.name;
+                    document.getElementById("address").value = data.address;
+
+                    // Split age into years and months
+                    const ageParts = data.age.match(/(\d+)\s*yr\s*(\d+)\s*mo/);
+                    if (ageParts) {
+                        document.getElementById("ageYears").value = ageParts[1];
+                        document.getElementById("ageMonths").value = ageParts[2];
+                    }
+
+                    document.getElementById("contact").value = data.contact;
+                    document.getElementById("sick").value = data.sick || "";
+                }
+            });
+        };
+    </script>
 </body>
 </html>
