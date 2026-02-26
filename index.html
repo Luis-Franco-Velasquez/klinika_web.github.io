@@ -26,6 +26,10 @@
         .filter-search h5 {
             margin-bottom: 10px;
         }
+
+        #btnCancelEdit {
+            display: none;
+        }
     </style>
 </head>
 
@@ -69,7 +73,7 @@
             </div>
             <div class="col-12 col-md-auto d-flex gap-2 align-items-start">
                 <button type="button" class="btn btn-primary" onclick="addPatient()">Add Record</button>
-                <button type="button" class="btn btn-cancel" onclick="cancelEdit()">Cancel Edit</button>
+                <button type="button" id="btnCancelEdit" class="btn btn-cancel" onclick="cancelEdit()">Cancel Edit</button>
             </div>
         </form>
 
@@ -128,6 +132,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const table = document.getElementById("patientTable");
+        const btnCancelEdit = document.getElementById("btnCancelEdit");
 
         let editId = null;
         let patientsData = [];
@@ -160,6 +165,7 @@
                     if (confirm("Are you sure you want to update this record?")) {
                         await updateDoc(doc(db, "patients", editId), patient);
                         editId = null;
+                        btnCancelEdit.style.display = "none";
                     }
                 } else {
                     await addDoc(collection(db, "patients"), patient);
@@ -174,7 +180,7 @@
         function clearForm() {
             editId = null;
             document.querySelectorAll("input, select").forEach(input => input.value = "");
-            document.getElementById("doctorType").value = "";
+            btnCancelEdit.style.display = "none";
         }
         window.cancelEdit = clearForm;
 
@@ -188,14 +194,41 @@
             renderFiltered();
         });
 
+        // FORMAT DATE FOR FLEXIBLE SEARCH
+        function formatDateForSearch(dateStr) {
+            if (!dateStr) return {};
+            const d = new Date(dateStr);
+            const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+            const mm = String(d.getMonth() + 1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            const yyyy = d.getFullYear();
+            const shortMonth = monthNames[d.getMonth()];
+            return {
+                ymd: `${yyyy}-${mm}-${dd}`,
+                md: `${mm}-${dd}`,
+                short: `${shortMonth} ${dd}`,
+                slash: `${d.getMonth()+1}/${dd}`
+            };
+        }
+
         // FILTER + SEARCH
         function renderFiltered() {
             const search = document.getElementById("searchInput").value.toLowerCase().trim();
-            const filter = document.getElementById("filterType").value;
+            const filter = document.getElementById("filterType").value.toLowerCase();
 
             const filtered = patientsData.filter(p => {
-                const matchesSearch = p.name.toLowerCase().includes(search) || p.date.includes(search);
-                const matchesFilter = filter ? p.doctorType.trim().toLowerCase() === filter.toLowerCase() : true;
+                const name = p.name.toLowerCase();
+                const dateFormats = formatDateForSearch(p.date);
+
+                const matchesSearch = search === "" || 
+                    name.includes(search) || 
+                    (dateFormats.ymd && dateFormats.ymd.includes(search)) ||
+                    (dateFormats.md && dateFormats.md.includes(search)) ||
+                    (dateFormats.short && dateFormats.short.toLowerCase().includes(search)) ||
+                    (dateFormats.slash && dateFormats.slash.includes(search));
+
+                const matchesFilter = filter === "" || p.doctorType.toLowerCase() === filter;
+
                 return matchesSearch && matchesFilter;
             });
 
@@ -234,6 +267,7 @@
         // EDIT
         window.editPatient = function (id) {
             editId = id;
+            btnCancelEdit.style.display = "inline-block"; // show cancel button
             const patient = patientsData.find(p => p.id === id);
             if (!patient) return;
 
