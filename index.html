@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klinika ni San Nicolas Patient Records</title>
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             padding: 20px;
             background: #f4f6f9;
         }
@@ -60,7 +62,8 @@
     <input type="date" id="date">
     <input type="text" id="name" placeholder="Full Name">
     <input type="text" id="address" placeholder="Address">
-    <input type="number" id="age" placeholder="Age">
+    <input type="number" id="ageYears" placeholder="Years" min="0">
+    <input type="number" id="ageMonths" placeholder="Months" min="0" max="11">
     <input type="text" id="contact" placeholder="Contact">
     <input type="text" id="sick" placeholder="Sickness (Optional)">
     <button onclick="addPatient()">Add Record</button>
@@ -81,12 +84,14 @@
     </table>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"; import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // 🔴 PASTE YOUR
-        FIREBASE CONFIG HERE const firebaseConfig = { apiKey: "PASTE_YOURS", authDomain: "PASTE_YOURS", projectId: "PASTE_YOURS", storageBucket: "PASTE_YOURS", messagingSenderId: "PASTE_YOURS", appId: "PASTE_YOURS" }; const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app); const table = document.getElementById("patientTable"); window.addPatient = async function() { const patient = { date: document.getElementById("date").value, name: document.getElementById("name").value, address: document.getElementById("address").value,
-        age: document.getElementById("age").value, contact: document.getElementById("contact").value, sick: document.getElementById("sick").value }; if (!patient.date || !patient.name || !patient.address || !patient.age || !patient.contact) { alert("Please
-        fill all required fields"); return; } await addDoc(collection(db, "patients"), patient); document.querySelectorAll("input").forEach(input => input.value = ""); } onSnapshot(collection(db, "patients"), (snapshot) => { table.innerHTML = ""; snapshot.forEach((docSnap)
-        => { const data = docSnap.data(); table.innerHTML += `
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"; import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // 🔹 Firebase Config
+        const firebaseConfig = { apiKey: "AIzaSyCzmst_7XakIWC47G-XiI2wti3iJ6h1tos", authDomain: "klinika-ni-san-nicolas.firebaseapp.com", projectId: "klinika-ni-san-nicolas", storageBucket: "klinika-ni-san-nicolas.firebasestorage.app", messagingSenderId:
+        "247172585082", appId: "1:247172585082:web:231c83f07b83767e840dc3", measurementId: "G-V3PHE6KYDF" }; const app = initializeApp(firebaseConfig); const db = getFirestore(app); const table = document.getElementById("patientTable"); // =================
+        ADD PATIENT ================= window.addPatient = async function () { const years = document.getElementById("ageYears").value; const months = document.getElementById("ageMonths").value; const patient = { date: document.getElementById("date").value,
+        name: document.getElementById("name").value, address: document.getElementById("address").value, age: years + " yr " + months + " mo", contact: document.getElementById("contact").value, sick: document.getElementById("sick").value }; if (!patient.date
+        || !patient.name || !patient.address || !years || !months || !patient.contact) { alert("Please fill all required fields"); return; } try { await addDoc(collection(db, "patients"), patient); document.querySelectorAll("input").forEach(input => input.value
+        = ""); } catch (error) { console.error("Error adding patient:", error); alert("Failed to add patient. Check console for errors."); } }; // ================= DISPLAY DATA ================= onSnapshot(collection(db, "patients"), (snapshot) => {
+        table.innerHTML = ""; snapshot.forEach((docSnap) => { const data = docSnap.data(); table.innerHTML += `
         <tr>
             <td>${data.date}</td>
             <td>${data.name}</td>
@@ -98,8 +103,7 @@
                 <button class="delete-btn" onclick="deletePatient('${docSnap.id}')">Delete</button>
             </td>
         </tr>
-        `; }); }); window.deletePatient = async function(id) { await deleteDoc(doc(db, "patients", id)); }
-
+        `; }); }); // ================= DELETE ================= window.deletePatient = async function (id) { try { await deleteDoc(doc(db, "patients", id)); } catch (error) { console.error("Error deleting patient:", error); } };
     </script>
 
 </body>
