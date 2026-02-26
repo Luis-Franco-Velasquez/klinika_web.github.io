@@ -16,10 +16,10 @@
             text-align: center;
         }
 
-        input {
+        input, select {
             padding: 8px;
             margin: 5px;
-            width: 18%;
+            width: 16%;
         }
 
         button {
@@ -37,8 +37,7 @@
             background: white;
         }
 
-        th,
-        td {
+        th, td {
             padding: 10px;
             border: 1px solid #ccc;
             text-align: center;
@@ -56,6 +55,11 @@
         .edit-btn {
             background: orange;
         }
+
+        .filter-search {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -63,6 +67,7 @@
 
     <h2>KLINIKA NI SAN NICOLAS PATIENT RECORDS</h2>
 
+    <!-- FORM -->
     <input type="date" id="date">
     <input type="text" id="name" placeholder="Full Name">
     <input type="text" id="address" placeholder="Address">
@@ -70,7 +75,23 @@
     <input type="number" id="ageMonths" placeholder="Months" min="0" max="11">
     <input type="text" id="contact" placeholder="Contact">
     <input type="text" id="sick" placeholder="Sickness (Optional)">
+    <input type="text" id="doctorName" placeholder="Doctor Name">
+    <select id="doctorType">
+        <option value="">Select Type</option>
+        <option value="Pedia">Pedia</option>
+        <option value="Adult">Adult</option>
+    </select>
     <button onclick="addPatient()">Add Record</button>
+
+    <!-- FILTER & SEARCH -->
+    <div class="filter-search">
+        <input type="text" id="searchInput" placeholder="Search by Name or Date" oninput="renderFiltered()">
+        <select id="filterType" onchange="renderFiltered()">
+            <option value="">All Doctors</option>
+            <option value="Pedia">Pedia</option>
+            <option value="Adult">Adult</option>
+        </select>
+    </div>
 
     <table>
         <thead>
@@ -81,6 +102,8 @@
                 <th>Age</th>
                 <th>Contact</th>
                 <th>Sickness</th>
+                <th>Doctor</th>
+                <th>Type</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -105,12 +128,15 @@
         const db = getFirestore(app);
         const table = document.getElementById("patientTable");
 
-        let editId = null; // Track which record is being edited
+        let editId = null;
+        let patientsData = []; // Keep all patients locally for search/filter
 
-        // ================= ADD / UPDATE PATIENT =================
+        // ================= ADD / UPDATE =================
         window.addPatient = async function () {
             const years = document.getElementById("ageYears").value;
             const months = document.getElementById("ageMonths").value;
+            const doctorName = document.getElementById("doctorName").value;
+            const doctorType = document.getElementById("doctorType").value;
 
             const patient = {
                 date: document.getElementById("date").value,
@@ -118,17 +144,18 @@
                 address: document.getElementById("address").value,
                 age: years + " yr " + months + " mo",
                 contact: document.getElementById("contact").value,
-                sick: document.getElementById("sick").value
+                sick: document.getElementById("sick").value,
+                doctorName: doctorName,
+                doctorType: doctorType
             };
 
-            if (!patient.date || !patient.name || !patient.address || !years || !months || !patient.contact) {
-                alert("Please fill all required fields");
+            if (!patient.date || !patient.name || !patient.address || !years || !months || !patient.contact || !doctorName || !doctorType) {
+                alert("Please fill all required fields including doctor info");
                 return;
             }
 
             try {
                 if (editId) {
-                    // Confirm before updating
                     if (confirm("Are you sure you want to update this record?")) {
                         await updateDoc(doc(db, "patients", editId), patient);
                         editId = null;
@@ -136,34 +163,55 @@
                 } else {
                     await addDoc(collection(db, "patients"), patient);
                 }
-                document.querySelectorAll("input").forEach(input => input.value = "");
+                document.querySelectorAll("input, select").forEach(input => input.value = "");
+                document.getElementById("doctorType").value = "";
             } catch (error) {
                 console.error("Error adding/updating patient:", error);
                 alert("Failed. Check console for errors.");
             }
         };
 
-        // ================= DISPLAY DATA =================
+        // ================= DISPLAY =================
         onSnapshot(collection(db, "patients"), (snapshot) => {
-            table.innerHTML = "";
-            snapshot.forEach((docSnap) => {
+            patientsData = []; // Reset
+            snapshot.forEach(docSnap => {
                 const data = docSnap.data();
+                patientsData.push({ id: docSnap.id, ...data });
+            });
+            renderFiltered();
+        });
+
+        // ================= RENDER FILTERED / SEARCH =================
+        function renderFiltered() {
+            const search = document.getElementById("searchInput").value.toLowerCase();
+            const filter = document.getElementById("filterType").value;
+
+            const filtered = patientsData.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search) || p.date.includes(search);
+                const matchesFilter = filter ? p.doctorType === filter : true;
+                return matchesSearch && matchesFilter;
+            });
+
+            table.innerHTML = "";
+            filtered.forEach(p => {
                 table.innerHTML += `
                     <tr>
-                        <td>${data.date}</td>
-                        <td>${data.name}</td>
-                        <td>${data.address}</td>
-                        <td>${data.age}</td>
-                        <td>${data.contact}</td>
-                        <td>${data.sick || ""}</td>
+                        <td>${p.date}</td>
+                        <td>${p.name}</td>
+                        <td>${p.address}</td>
+                        <td>${p.age}</td>
+                        <td>${p.contact}</td>
+                        <td>${p.sick || ""}</td>
+                        <td>${p.doctorName}</td>
+                        <td>${p.doctorType}</td>
                         <td>
-                            <button class="edit-btn" onclick="editPatient('${docSnap.id}')">Edit</button>
-                            <button class="delete-btn" onclick="deletePatient('${docSnap.id}')">Delete</button>
+                            <button class="edit-btn" onclick="editPatient('${p.id}')">Edit</button>
+                            <button class="delete-btn" onclick="deletePatient('${p.id}')">Delete</button>
                         </td>
                     </tr>
                 `;
             });
-        });
+        }
 
         // ================= DELETE =================
         window.deletePatient = async function (id) {
@@ -178,28 +226,27 @@
 
         // ================= EDIT =================
         window.editPatient = function (id) {
-            const patientDoc = doc(db, "patients", id);
             editId = id;
+            const patient = patientsData.find(p => p.id === id);
+            if (!patient) return;
 
-            onSnapshot(patientDoc, (snap) => {
-                const data = snap.data();
-                if (data) {
-                    document.getElementById("date").value = data.date;
-                    document.getElementById("name").value = data.name;
-                    document.getElementById("address").value = data.address;
+            document.getElementById("date").value = patient.date;
+            document.getElementById("name").value = patient.name;
+            document.getElementById("address").value = patient.address;
 
-                    // Split age into years and months
-                    const ageParts = data.age.match(/(\d+)\s*yr\s*(\d+)\s*mo/);
-                    if (ageParts) {
-                        document.getElementById("ageYears").value = ageParts[1];
-                        document.getElementById("ageMonths").value = ageParts[2];
-                    }
+            const ageParts = patient.age.match(/(\d+)\s*yr\s*(\d+)\s*mo/);
+            if (ageParts) {
+                document.getElementById("ageYears").value = ageParts[1];
+                document.getElementById("ageMonths").value = ageParts[2];
+            }
 
-                    document.getElementById("contact").value = data.contact;
-                    document.getElementById("sick").value = data.sick || "";
-                }
-            });
+            document.getElementById("contact").value = patient.contact;
+            document.getElementById("sick").value = patient.sick || "";
+            document.getElementById("doctorName").value = patient.doctorName;
+            document.getElementById("doctorType").value = patient.doctorType;
         };
+
     </script>
+
 </body>
 </html>
