@@ -3,16 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Klinika ni San Nicolas Patient Records</title>
+<title>Patient Records - Klinika ni San Nicolas</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Prevent cache/back-button access -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-
 <style>
-body.dark-mode { background:#121212 !important; color:white !important; }
+body.dark-mode { background-color:#121212 !important; color:white !important; }
 .dark-mode .table { color:white; }
 .dark-mode .table-striped tbody tr:nth-of-type(odd){ background:#1f1f1f; }
 .dark-mode .form-control, .dark-mode .form-select{ background:#2a2a2a; color:white; border-color:#444; }
@@ -26,20 +20,19 @@ body.dark-mode { background:#121212 !important; color:white !important; }
 
 <div class="container py-4 position-relative">
 
-<!-- Top buttons -->
-<div class="d-flex justify-content-end gap-2 mb-2">
-<button class="btn btn-dark" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-<button class="btn btn-secondary" onclick="logout()">Logout</button>
-<button class="btn btn-success" onclick="exportToExcel()">Export Excel</button>
-<button class="btn btn-warning" onclick="backupData()">Backup</button>
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h2>KLINIKA NI SAN NICOLAS PATIENT RECORDS</h2>
+<div>
+<button class="btn btn-dark me-2" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+<button class="btn btn-danger" onclick="logout()">Logout</button>
+</div>
 </div>
 
-<h2 class="text-center mb-2">KLINIKA NI SAN NICOLAS PATIENT RECORDS</h2>
-<h5 class="text-center mb-2">Total Records: <span id="recordCount">0</span></h5>
+<h5>Total Records: <span id="recordCount">0</span></h5>
 <div id="successAlert" class="alert alert-success text-center py-2"></div>
 
-<!-- Patient Form -->
 <form id="patientForm" class="row g-3 mb-4">
+<!-- Inputs same as before -->
 <div class="col-md-3"><input type="date" id="date" class="form-control" required></div>
 <div class="col-md-3"><input type="text" id="name" class="form-control" placeholder="Full Name" required></div>
 <div class="col-md-3"><input type="text" id="address" class="form-control" placeholder="Address" required></div>
@@ -61,38 +54,19 @@ body.dark-mode { background:#121212 !important; color:white !important; }
 </div>
 </form>
 
-<!-- Filters -->
+<!-- Filters, Export, Backup same as before -->
 <div class="row mb-3 g-2">
 <div class="col-md-3"><input type="text" id="searchInput" class="form-control" placeholder="Search Name or Date"></div>
-<div class="col-md-2">
-<select id="filterType" class="form-select">
-<option value="">All Doctors</option>
-<option value="Pedia">Pedia</option>
-<option value="Adult">Adult</option>
-</select>
-</div>
-<div class="col-md-2">
-<select id="filterMonth" class="form-select">
-<option value="">All Months</option>
-<option value="0">January</option><option value="1">February</option>
-<option value="2">March</option><option value="3">April</option>
-<option value="4">May</option><option value="5">June</option>
-<option value="6">July</option><option value="7">August</option>
-<option value="8">September</option><option value="9">October</option>
-<option value="10">November</option><option value="11">December</option>
-</select>
-</div>
+<div class="col-md-2"><select id="filterType" class="form-select"><option value="">All Doctors</option><option value="Pedia">Pedia</option><option value="Adult">Adult</option></select></div>
+<div class="col-md-2"><select id="filterMonth" class="form-select"><option value="">All Months</option></select></div>
 <div class="col-md-2"><select id="filterYear" class="form-select"><option value="">All Years</option></select></div>
-<div class="col-md-2">
-<select id="sortOption" class="form-select">
-<option value="">No Sorting</option>
-<option value="firstAZ">First Name A-Z</option>
-<option value="lastAZ">Last Name A-Z</option>
-</select>
+<div class="col-md-2"><select id="sortOption" class="form-select"><option value="">No Sorting</option><option value="firstAZ">First Name A-Z</option><option value="lastAZ">Last Name A-Z</option></select></div>
+<div class="col-md-2 d-flex gap-2">
+<button class="btn btn-success" onclick="exportToExcel()">Excel</button>
+<button class="btn btn-warning" onclick="backupData()">Backup</button>
 </div>
 </div>
 
-<!-- Table -->
 <div class="table-responsive">
 <table class="table table-bordered table-striped bg-white">
 <thead class="table-primary">
@@ -103,116 +77,71 @@ body.dark-mode { background:#121212 !important; color:white !important; }
 </table>
 </div>
 
-<!-- Sounds -->
-<audio id="addSound" preload="auto">
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4011f5b55c.mp3?filename=success-1-6297.mp3">
-</audio>
-<audio id="editSound" preload="auto">
-<source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c1c6c8cdd2.mp3?filename=click-124467.mp3">
-</audio>
+<audio id="addSound" preload="auto"><source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4011f5b55c.mp3?filename=success-1-6297.mp3"></audio>
+<audio id="editSound" preload="auto"><source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c1c6c8cdd2.mp3?filename=click-124467.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// 🔑 CONFIG
-const firebaseConfig = { /* YOUR CONFIG HERE */ };
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCzmst_7XakIWC47G-XiI2wti3iJ6h1tos",
+  authDomain: "klinika-ni-san-nicolas.firebaseapp.com",
+  projectId: "klinika-ni-san-nicolas",
+  storageBucket: "klinika-ni-san-nicolas.firebasestorage.app",
+  messagingSenderId: "247172585082",
+  appId: "1:247172585082:web:231c83f07b83767e840dc3",
+  measurementId: "G-V3PHE6KYDF"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// --- Auth protection ---
+onAuthStateChanged(auth, user => { if(!user) window.location.href="index.html"; });
+
+// --- Logout ---
+window.logout = async()=>{ await signOut(auth); window.location.href="index.html"; };
+
+// --- Main logic ---
 let editId=null;
 let patientsData=[];
 const table=document.getElementById("patientTable");
 const form=document.getElementById("patientForm");
 const btnCancel=document.getElementById("btnCancelEdit");
 
-// --- AUTH PROTECTION ---
-onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = "index.html"; // redirect if not logged in
-});
+form.addEventListener("submit",e=>{ e.preventDefault(); addPatient(); });
+document.getElementById("ageYears").addEventListener("input",()=>{ if(ageYears.value.length>=2) ageMonths.focus(); });
+document.getElementById("ageMonths").addEventListener("input",()=>{ if(ageMonths.value.length>=2) contact.focus(); });
+form.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.shiftKey){ e.preventDefault(); const inputs=[...form.querySelectorAll("input,select")]; let i=inputs.indexOf(document.activeElement); if(i>-1&&i<inputs.length-1) inputs[i+1].focus(); } });
 
-// --- LOGOUT ---
-window.logout = () => { signOut(auth).then(()=>window.location.href="index.html"); };
+document.getElementById("searchInput").addEventListener("input",renderFiltered);
+document.getElementById("filterType").addEventListener("change",renderFiltered);
+document.getElementById("filterMonth").addEventListener("change",renderFiltered);
+document.getElementById("filterYear").addEventListener("change",renderFiltered);
+document.getElementById("sortOption").addEventListener("change",renderFiltered);
 
-// --- FORM SUBMIT ---
-form.addEventListener("submit",e=>{
-e.preventDefault();
-addPatient();
-});
-
-// SHIFT+ENTER NAVIGATION
-form.addEventListener("keydown",e=>{
-if(e.key==="Enter"&&e.shiftKey){
-e.preventDefault();
-const inputs=[...form.querySelectorAll("input,select")];
-let i=inputs.indexOf(document.activeElement);
-if(i>-1&&i<inputs.length-1) inputs[i+1].focus();
-}
-});
-
-// AUTO MOVE AFTER AGE
-document.getElementById("ageYears").addEventListener("input",function(){if(this.value.length>=2) ageMonths.focus();});
-document.getElementById("ageMonths").addEventListener("input",function(){if(this.value.length>=2) contact.focus();});
-
-// FILTER EVENTS
-["searchInput","filterType","filterMonth","filterYear","sortOption"].forEach(id=>{
-document.getElementById(id).addEventListener("input",renderFiltered);
-document.getElementById(id).addEventListener("change",renderFiltered);
-});
-
-// --- ADD / EDIT PATIENT ---
 async function addPatient(){
 const patient={
-date:date.value,
-name:name.value,
-address:address.value,
+date:date.value,name:name.value,address:address.value,
 age:ageYears.value+" yr "+ageMonths.value+" mo",
-contact:contact.value,
-sick:sick.value,
-doctorName:doctorName.value,
-doctorType:doctorType.value
+contact:contact.value,sick:sick.value,
+doctorName:doctorName.value,doctorType:doctorType.value
 };
-
-if(editId){
-await updateDoc(doc(db,"patients",editId),patient);
-showSuccess(true);
-}else{
-await addDoc(collection(db,"patients"),patient);
-showSuccess(false);
-}
+if(editId){ await updateDoc(doc(db,"patients",editId),patient); showSuccess(true); } 
+else { await addDoc(collection(db,"patients"),patient); showSuccess(false); }
 clearForm();
 }
 
-// --- CLEAR FORM ---
-function clearForm(){
-editId=null;
-form.reset();
-btnCancel.style.display="none";
-date.focus();
-}
-
-// --- CANCEL EDIT ---
+function clearForm(){ editId=null; form.reset(); btnCancel.style.display="none"; date.focus(); }
 window.cancelEdit=clearForm;
 
-// --- LOAD PATIENTS ---
-onSnapshot(collection(db,"patients"),snap=>{
-patientsData=[];
-snap.forEach(d=>patientsData.push({id:d.id,...d.data()}));
-populateYear();
-renderFiltered();
-});
+onSnapshot(collection(db,"patients"),snap=>{ patientsData=[]; snap.forEach(d=>patientsData.push({id:d.id,...d.data()})); populateYear(); renderFiltered(); });
+function populateYear(){ let years=[...new Set(patientsData.map(p=>new Date(p.date).getFullYear()))]; filterYear.innerHTML='<option value="">All Years</option>'; years.sort((a,b)=>b-a).forEach(y=>filterYear.innerHTML+=`<option value="${y}">${y}</option>`); }
 
-// --- POPULATE YEAR FILTER ---
-function populateYear(){
-let years=[...new Set(patientsData.map(p=>new Date(p.date).getFullYear()))];
-filterYear.innerHTML='<option value="">All Years</option>';
-years.sort((a,b)=>b-a).forEach(y=>filterYear.innerHTML+=`<option value="${y}">${y}</option>`);
-}
-
-// --- RENDER TABLE ---
 function renderFiltered(){
 let filtered=patientsData.filter(p=>{
 let search=searchInput.value.toLowerCase();
@@ -223,85 +152,25 @@ let monthMatch=!filterMonth.value||d.getMonth()==filterMonth.value;
 let yearMatch=!filterYear.value||d.getFullYear()==filterYear.value;
 return nameMatch&&typeMatch&&monthMatch&&yearMatch;
 });
-
-// SORT
 if(sortOption.value==="firstAZ") filtered.sort((a,b)=>a.name.split(" ")[0].localeCompare(b.name.split(" ")[0]));
-if(sortOption.value==="lastAZ") filtered.sort((a,b)=>{
-let la=a.name.split(" ").pop(), lb=b.name.split(" ").pop();
-return la.localeCompare(lb);
-});
-
+if(sortOption.value==="lastAZ") filtered.sort((a,b)=>{let la=a.name.split(" ").pop(); let lb=b.name.split(" ").pop(); return la.localeCompare(lb); });
 table.innerHTML="";
-filtered.forEach(p=>{
-table.innerHTML+=`
-<tr>
-<td>${p.date}</td>
-<td>${p.name}</td>
-<td>${p.address}</td>
-<td>${p.age}</td>
-<td>${p.contact}</td>
-<td>${p.sick||""}</td>
-<td>${p.doctorName}</td>
-<td>${p.doctorType}</td>
-<td>
-<button class="btn btn-edit btn-sm" onclick="editPatient('${p.id}')">Edit</button>
-<button class="btn btn-danger btn-sm" onclick="deletePatient('${p.id}')">Delete</button>
-</td>
-</tr>`;
-});
-
+filtered.forEach(p=>{ table.innerHTML+=`<tr><td>${p.date}</td><td>${p.name}</td><td>${p.address}</td><td>${p.age}</td><td>${p.contact}</td><td>${p.sick||""}</td><td>${p.doctorName}</td><td>${p.doctorType}</td><td><button class="btn btn-edit btn-sm" onclick="editPatient('${p.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="deletePatient('${p.id}')">Delete</button></td></tr>`; });
 animateCounter(filtered.length);
 }
 
-// --- DELETE ---
 window.deletePatient=async id=>{ if(confirm("Delete record?")) await deleteDoc(doc(db,"patients",id)); };
+window.editPatient=id=>{ editId=id; btnCancel.style.display="inline-block"; let p=patientsData.find(x=>x.id===id); date.value=p.date; name.value=p.name; address.value=p.address; let parts=p.age.match(/(\d+)/g); ageYears.value=parts[0]; ageMonths.value=parts[1]; contact.value=p.contact; sick.value=p.sick; doctorName.value=p.doctorName; doctorType.value=p.doctorType; };
 
-// --- EDIT ---
-window.editPatient=id=>{
-editId=id;
-btnCancel.style.display="inline-block";
-let p=patientsData.find(x=>x.id===id);
-date.value=p.date; name.value=p.name; address.value=p.address;
-let parts=p.age.match(/(\d+)/g); ageYears.value=parts[0]; ageMonths.value=parts[1];
-contact.value=p.contact; sick.value=p.sick; doctorName.value=p.doctorName; doctorType.value=p.doctorType;
-};
+function showSuccess(isEdit){ successAlert.innerHTML=isEdit?"✔ Record Updated":"✔ Record Saved"; successAlert.style.display="block"; successAlert.style.opacity="1"; (isEdit?editSound:addSound).play(); setTimeout(()=>{ successAlert.style.opacity="0"; setTimeout(()=>successAlert.style.display="none",300); },1500); }
 
-// --- SUCCESS ALERT ---
-function showSuccess(isEdit){
-successAlert.innerHTML=isEdit?"✔ Record Updated":"✔ Record Saved";
-successAlert.style.display="block"; successAlert.style.opacity="1";
-(isEdit?editSound:addSound).play();
-setTimeout(()=>{successAlert.style.opacity="0"; setTimeout(()=>successAlert.style.display="none",300);},1500);
-}
+function animateCounter(n){ let c=recordCount, start=0, interval=setInterval(()=>{ start++; c.textContent=start; if(start>=n) clearInterval(interval); },20); }
 
-// --- ANIMATE COUNTER ---
-function animateCounter(n){
-let c=recordCount; let start=0;
-let interval=setInterval(()=>{ start++; c.textContent=start; if(start>=n) clearInterval(interval); },20);
-}
+window.exportToExcel=function(){ let html="<table border='1'>"+patientTable.innerHTML+"</table>"; let blob=new Blob([html],{type:"application/vnd.ms-excel"}); let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Patient_Records.xls"; a.click(); };
 
-// --- EXPORT ---
-window.exportToExcel=function(){
-let html="<table border='1'>"+patientTable.innerHTML+"</table>";
-let blob=new Blob([html],{type:"application/vnd.ms-excel"});
-let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Patient_Records.xls"; a.click();
-};
+window.backupData=async function(){ let snap=await getDocs(collection(db,"patients")); let data=[]; snap.forEach(d=>data.push({id:d.id,...d.data()})); let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); let a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Backup_"+new Date().toISOString().replace(/[:T]/g,"-")+".json"; a.click(); };
 
-// --- BACKUP ---
-window.backupData=async function(){
-let snap=await getDocs(collection(db,"patients"));
-let data=[]; snap.forEach(d=>data.push({id:d.id,...d.data()}));
-let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-let a=document.createElement("a"); a.href=URL.createObjectURL(blob);
-a.download="Backup_"+new Date().toISOString().replace(/[:T]/g,"-")+".json"; a.click();
-};
-
-// --- DARK MODE ---
 window.toggleDarkMode=function(){ document.body.classList.toggle("dark-mode"); };
-
-// --- BACK BUTTON PREVENTION ---
-window.history.forward(); function noBack(){ window.history.forward(); }
-window.onload=noBack; window.onpageshow=function(evt){ if(evt.persisted) noBack(); }; window.onunload=function(){};
 </script>
 </body>
 </html>
