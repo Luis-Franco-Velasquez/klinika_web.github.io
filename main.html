@@ -15,7 +15,6 @@ body.dark-mode{background:#121212!important;color:white!important;}
 .btn-edit{background:orange;color:white;}
 .btn-cancel{background:gray;color:white;}
 #btnCancelEdit{display:none;}
-#successAlert{display:none;opacity:0;transition:.3s;}
 </style>
 </head>
 
@@ -23,34 +22,28 @@ body.dark-mode{background:#121212!important;color:white!important;}
 
 <div class="container py-4">
 
-<!-- HEADER -->
 <div class="d-flex justify-content-between align-items-center mb-3">
 <h2>KLINIKA NI SAN NICOLAS PATIENT RECORDS</h2>
 <div>
-
 <a href="https://luis-franco-velasquez.github.io/Medicine-Inventory/index.html"
-   target="_blank"
-   class="btn btn-success me-2">
-   💊 Medicine Inventory
-</a>
+target="_blank"
+class="btn btn-success me-2">💊 Medicine Inventory</a>
 
 <button class="btn btn-dark me-2" onclick="toggleDarkMode()">🌙 Dark Mode</button>
 <button class="btn btn-danger" onclick="logout()">Logout</button>
-
 </div>
 </div>
 
 <h5>Total Records: <span id="recordCount">0</span></h5>
-<div id="successAlert" class="alert alert-success text-center py-2"></div>
 
-<!-- FORM -->
+<!-- ================= FORM ================= -->
 <form id="patientForm" class="row g-3 mb-4">
 
 <div class="col-md-3"><input type="date" id="date" class="form-control" required></div>
 <div class="col-md-3"><input type="text" id="name" class="form-control" placeholder="Full Name" required></div>
 <div class="col-md-3"><input type="text" id="address" class="form-control" placeholder="Address" required></div>
-<div class="col-md-1"><input type="number" id="ageYears" class="form-control" placeholder="Yr" min="0" required></div>
-<div class="col-md-1"><input type="number" id="ageMonths" class="form-control" placeholder="Mo" min="0" max="11" required></div>
+<div class="col-md-1"><input type="number" id="ageYears" class="form-control" placeholder="Yr" required></div>
+<div class="col-md-1"><input type="number" id="ageMonths" class="form-control" placeholder="Mo" required></div>
 <div class="col-md-3"><input type="text" id="contact" class="form-control" placeholder="Contact" required></div>
 <div class="col-md-3"><input type="text" id="sick" class="form-control" placeholder="Sickness"></div>
 <div class="col-md-3"><input type="text" id="doctorName" class="form-control" placeholder="Doctor Name" required></div>
@@ -70,11 +63,11 @@ body.dark-mode{background:#121212!important;color:white!important;}
 
 </form>
 
-<!-- FILTERS -->
+<!-- ================= FILTERS ================= -->
 <div class="row mb-3 g-2">
 
 <div class="col-md-3">
-<input type="text" id="searchInput" class="form-control" placeholder="Search Name or Date">
+<input type="text" id="searchInput" class="form-control" placeholder="Search Name, Date, Address, Doctor">
 </div>
 
 <div class="col-md-2">
@@ -112,7 +105,7 @@ body.dark-mode{background:#121212!important;color:white!important;}
 
 </div>
 
-<!-- TABLE -->
+<!-- ================= TABLE ================= -->
 <div class="table-responsive">
 <table class="table table-bordered table-striped bg-white">
 <thead class="table-primary">
@@ -154,26 +147,54 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-/* ================= AUTH PROTECTION ================= */
+/* ================= AUTH ================= */
 onAuthStateChanged(auth,user=>{
-  if(!user) window.location.href="index.html";
+if(!user) window.location.href="index.html";
 });
 
 window.logout = async()=>{
-  await signOut(auth);
-  window.location.href="index.html";
+await signOut(auth);
+window.location.href="index.html";
 };
 
 /* ================= VARIABLES ================= */
 let editId=null;
 let patientsData=[];
+let filteredData=[];
 
 const table=document.getElementById("patientTable");
-const form=document.getElementById("patientForm");
-const btnCancel=document.getElementById("btnCancelEdit");
+
+/* ================= POPULATE MONTH + YEAR ================= */
+function populateFilters(){
+
+const monthSelect=document.getElementById("filterMonth");
+monthSelect.innerHTML=`<option value="">All Months</option>`;
+
+const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+months.forEach((m,i)=>{
+let opt=document.createElement("option");
+opt.value=i+1;
+opt.textContent=m;
+monthSelect.appendChild(opt);
+});
+
+const yearSelect=document.getElementById("filterYear");
+yearSelect.innerHTML=`<option value="">All Years</option>`;
+
+const startYear=2020;
+const currentYear=new Date().getFullYear()+1;
+
+for(let y=startYear;y<=currentYear;y++){
+let opt=document.createElement("option");
+opt.value=y;
+opt.textContent=y;
+yearSelect.appendChild(opt);
+}
+}
 
 /* ================= ADD / UPDATE ================= */
-form.addEventListener("submit",async e=>{
+patientForm.addEventListener("submit",async e=>{
 e.preventDefault();
 
 const patient={
@@ -188,54 +209,56 @@ doctorType:doctorType.value
 };
 
 if(editId){
-  await updateDoc(doc(db,"patients",editId),patient);
+await updateDoc(doc(db,"patients",editId),patient);
 }else{
-  await addDoc(collection(db,"patients"),patient);
+await addDoc(collection(db,"patients"),patient);
 }
 
-clearForm();
+patientForm.reset();
+editId=null;
 });
 
-function clearForm(){
-editId=null;
-form.reset();
-btnCancel.style.display="none";
-}
-
-window.cancelEdit=clearForm;
-
-/* ================= REALTIME LISTENER ================= */
+/* ================= REALTIME ================= */
 onSnapshot(collection(db,"patients"),snap=>{
 patientsData=[];
 snap.forEach(d=>patientsData.push({id:d.id,...d.data()}));
+populateFilters();
 renderFiltered();
 });
 
-/* ================= RENDER ================= */
+/* ================= FILTER + SEARCH ================= */
 function renderFiltered(){
 
 let filtered=[...patientsData];
 
-let search=searchInput.value?.toLowerCase()||"";
+let search=searchInput.value.toLowerCase();
+
 filtered=filtered.filter(p=>
 p.name.toLowerCase().includes(search)||
-p.date.includes(search)
+p.date.includes(search)||
+p.address.toLowerCase().includes(search)||
+p.doctorName.toLowerCase().includes(search)
 );
 
 if(filterType.value)
 filtered=filtered.filter(p=>p.doctorType===filterType.value);
 
+if(filterMonth.value)
+filtered=filtered.filter(p=>parseInt(p.date.split("-")[1])===parseInt(filterMonth.value));
+
+if(filterYear.value)
+filtered=filtered.filter(p=>p.date.split("-")[0]===filterYear.value);
+
 if(sortOption.value==="firstAZ")
 filtered.sort((a,b)=>a.name.localeCompare(b.name));
 
 if(sortOption.value==="lastAZ")
-filtered.sort((a,b)=>{
-let la=a.name.split(" ").pop();
-let lb=b.name.split(" ").pop();
-return la.localeCompare(lb);
-});
+filtered.sort((a,b)=>a.name.split(" ").pop().localeCompare(b.name.split(" ").pop()));
+
+filteredData=filtered;
 
 table.innerHTML="";
+
 filtered.forEach(p=>{
 table.innerHTML+=`
 <tr>
@@ -248,44 +271,42 @@ table.innerHTML+=`
 <td>${p.doctorName}</td>
 <td>${p.doctorType}</td>
 <td>
-<button class="btn btn-edit btn-sm" onclick="editPatient('${p.id}')">Edit</button>
+<button class="btn btn-warning btn-sm" onclick="editPatient('${p.id}')">Edit</button>
 <button class="btn btn-danger btn-sm" onclick="deletePatient('${p.id}')">Delete</button>
 </td>
-</tr>
-`;
+</tr>`;
 });
 
-document.getElementById("recordCount").textContent=filtered.length;
+recordCount.textContent=filtered.length;
 }
 
-window.editPatient=id=>{
-editId=id;
-btnCancel.style.display="inline-block";
-let p=patientsData.find(x=>x.id===id);
-date.value=p.date;
-name.value=p.name;
-address.value=p.address;
-let parts=p.age.match(/\d+/g);
-ageYears.value=parts[0];
-ageMonths.value=parts[1];
-contact.value=p.contact;
-sick.value=p.sick;
-doctorName.value=p.doctorName;
-doctorType.value=p.doctorType;
-};
-
-window.deletePatient=async id=>{
-if(confirm("Delete record?"))
-await deleteDoc(doc(db,"patients",id));
-};
-
-/* ================= EXPORT ================= */
+/* ================= EXPORT FILTERED ================= */
 window.exportToExcel=function(){
-let html="<table border='1'>"+table.innerHTML+"</table>";
+
+let html=`<table border="1">
+<tr>
+<th>Date</th><th>Name</th><th>Address</th><th>Age</th><th>Contact</th><th>Sickness</th><th>Doctor</th><th>Type</th>
+</tr>`;
+
+filteredData.forEach(p=>{
+html+=`<tr>
+<td>${p.date}</td>
+<td>${p.name}</td>
+<td>${p.address}</td>
+<td>${p.age}</td>
+<td>${p.contact}</td>
+<td>${p.sick||""}</td>
+<td>${p.doctorName}</td>
+<td>${p.doctorType}</td>
+</tr>`;
+});
+
+html+="</table>";
+
 let blob=new Blob([html],{type:"application/vnd.ms-excel"});
 let a=document.createElement("a");
 a.href=URL.createObjectURL(blob);
-a.download="Patient_Records.xls";
+a.download="Filtered_Patient_Records.xls";
 a.click();
 };
 
@@ -300,6 +321,13 @@ a.href=URL.createObjectURL(blob);
 a.download="Backup_"+new Date().toISOString().replace(/[:T]/g,"-")+".json";
 a.click();
 };
+
+/* ================= EVENTS ================= */
+searchInput.addEventListener("input",renderFiltered);
+filterType.addEventListener("change",renderFiltered);
+filterMonth.addEventListener("change",renderFiltered);
+filterYear.addEventListener("change",renderFiltered);
+sortOption.addEventListener("change",renderFiltered);
 
 /* ================= DARK MODE ================= */
 window.toggleDarkMode=function(){
