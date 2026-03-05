@@ -6,131 +6,734 @@
 <title>Klinika ni San Nicolas - Patient Records</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-body.dark-mode{background:#121212!important;color:white!important;}
-.dark-mode .table{color:white;}
-.dark-mode .table-striped tbody tr:nth-of-type(odd){background:#1f1f1f;}
-.dark-mode .form-control,.dark-mode .form-select{background:#2a2a2a;color:white;border-color:#444;}
-.btn-edit{background:orange;color:white;}
-.btn-cancel{background:gray;color:white;}
-#btnCancelEdit{display:none;}
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --secondary: #06b6d4;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --dark: #1f2937;
+  --light: #f3f4f6;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #374151;
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+  color: #e5e7eb;
+}
+
+.dark-mode .card {
+  background: #1f2937;
+  color: #e5e7eb;
+  border-color: #374151;
+}
+
+.dark-mode .table {
+  color: #e5e7eb;
+}
+
+.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+  background: #111827;
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+  background: #374151;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+  background: #374151;
+  color: #e5e7eb;
+  border-color: var(--primary);
+}
+
+.dark-mode .table-primary {
+  background: #374151 !important;
+  color: #e5e7eb;
+}
+
+.dark-mode .text-muted {
+  color: #9ca3af !important;
+}
+
+.dark-mode .modal-content {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Glassmorphism Container */
+.main-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  margin: 20px auto;
+  padding: 30px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 1400px;
+}
+
+.dark-mode .main-container {
+  background: rgba(31, 41, 55, 0.95);
+}
+
+/* Header */
+.brand-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 16px;
+  margin-bottom: 30px;
+  box-shadow: var(--card-shadow);
+}
+
+.brand-header h2 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.75rem;
+}
+
+.brand-header i {
+  font-size: 2rem;
+  margin-right: 15px;
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+  background: white;
+  overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  background: transparent;
+  border-bottom: 2px solid #f3f4f6;
+  padding: 20px;
+  font-weight: 600;
+}
+
+.dark-mode .card-header {
+  border-bottom-color: #374151;
+}
+
+/* Stats Cards */
+.stat-card {
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.stat-primary { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
+.stat-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.stat-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+.stat-info { background: rgba(6, 182, 212, 0.1); color: var(--secondary); }
+
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Form Styling */
+.form-control, .form-select {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.form-floating > .form-control {
+  border-radius: 12px;
+  height: calc(3.5rem + 2px);
+}
+
+.form-floating > label {
+  padding: 1rem 1rem;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+  border: none;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+  border: none;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+  border: none;
+  color: white;
+}
+
+.btn-dark {
+  background: #374151;
+  border: none;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+  color: white;
+  border: none;
+}
+
+.btn-cancel {
+  background: #6b7280;
+  color: white;
+  border: none;
+}
+
+/* Table Styling */
+.table-container {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.dark-mode .table-container {
+  background: #1f2937;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 16px;
+}
+
+.table tbody td {
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: all 0.2s;
+}
+
+.table tbody tr:hover {
+  background: #f9fafb;
+  transform: scale(1.01);
+}
+
+.dark-mode .table tbody tr:hover {
+  background: #374151;
+}
+
+/* Action Buttons */
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btns .btn {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+/* Badges */
+.badge-type {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.badge-pedia {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--secondary);
+}
+
+.badge-adult {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary);
+}
+
+/* Search Box */
+.search-wrapper {
+  position: relative;
+}
+
+.search-wrapper i {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.search-wrapper input {
+  padding-left: 45px;
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(5px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+}
+
+.loading-overlay.show {
+  display: flex;
+}
+
+.spinner-modern {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-container {
+    margin: 10px;
+    padding: 20px;
+  }
+  
+  .brand-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .action-btns {
+    flex-direction: column;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
+}
 </style>
 </head>
 
 <body class="bg-light">
 
-<div class="container py-4">
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-<h2>KLINIKA NI SAN NICOLAS PATIENT RECORDS</h2>
-<div>
-<a href="https://luis-franco-velasquez.github.io/Medicine-Inventory/index.html"
-target="_blank"
-class="btn btn-success me-2">💊 Medicine Inventory</a>
-
-<button class="btn btn-dark me-2" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-<button class="btn btn-danger" onclick="logout()">Logout</button>
-</div>
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="spinner-modern"></div>
+  <p class="mt-3 text-muted">Processing...</p>
 </div>
 
-<h5>Total Records: <span id="recordCount">0</span></h5>
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
 
-<!-- ================= FORM ================= -->
-<form id="patientForm" class="row g-3 mb-4">
+<div class="main-container">
 
-<div class="col-md-3"><input type="date" id="date" class="form-control" required></div>
-<div class="col-md-3"><input type="text" id="name" class="form-control" placeholder="Full Name" required></div>
-<div class="col-md-3"><input type="text" id="address" class="form-control" placeholder="Address" required></div>
-<div class="col-md-1"><input type="number" id="ageYears" class="form-control" placeholder="Yr" required></div>
-<div class="col-md-1"><input type="number" id="ageMonths" class="form-control" placeholder="Mo" required></div>
-<div class="col-md-3"><input type="text" id="contact" class="form-control" placeholder="Contact" required></div>
-<div class="col-md-3"><input type="text" id="sick" class="form-control" placeholder="Sickness"></div>
-<div class="col-md-3"><input type="text" id="doctorName" class="form-control" placeholder="Doctor Name" required></div>
+  <!-- Brand Header -->
+  <div class="brand-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <div>
+        <h2>KLINIKA NI SAN NICOLAS</h2>
+        <small>Patient Records Management System</small>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="https://luis-franco-velasquez.github.io/Medicine-Inventory/index.html" 
+         target="_blank" class="btn btn-light btn-sm">
+        <i class="bi bi-capsule"></i> Medicine Inventory
+      </a>
+      <button class="btn btn-outline-light btn-sm" onclick="toggleDarkMode()">
+        <i class="bi bi-moon-stars"></i> <span id="darkModeText">Dark</span>
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="logout()">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </div>
+  </div>
 
-<div class="col-md-3">
-<select id="doctorType" class="form-select" required>
-<option value="">Select Type</option>
-<option value="Pedia">Pedia</option>
-<option value="Adult">Adult</option>
-</select>
+  <!-- Statistics Row -->
+  <div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon stat-primary">
+          <i class="bi bi-people-fill"></i>
+        </div>
+        <div>
+          <p class="stat-number" id="totalRecords">0</p>
+          <p class="stat-label">Total Records</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon stat-success">
+          <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <div>
+          <p class="stat-number" id="todayRecords">0</p>
+          <p class="stat-label">Today's Records</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon stat-warning">
+          <i class="bi bi-person-heart"></i>
+        </div>
+        <div>
+          <p class="stat-number" id="pediaCount">0</p>
+          <p class="stat-label">Pedia Patients</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+      <div class="card stat-card">
+        <div class="stat-icon stat-info">
+          <i class="bi bi-person-workspace"></i>
+        </div>
+        <div>
+          <p class="stat-number" id="adultCount">0</p>
+          <p class="stat-label">Adult Patients</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Form Card -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Patient Registration</h5>
+      <span class="badge bg-primary" id="formMode">New Record</span>
+    </div>
+    <div class="card-body">
+      <form id="patientForm" class="row g-3">
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Date <span class="text-danger">*</span></label>
+          <input type="date" id="date" class="form-control" required>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Full Name <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+            <input type="text" id="name" class="form-control" placeholder="Juan Dela Cruz" required>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Address <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
+            <input type="text" id="address" class="form-control" placeholder="Barangay, City" required>
+          </div>
+        </div>
+        
+        <div class="col-md-1">
+          <label class="form-label small text-muted">Years</label>
+          <input type="number" id="ageYears" class="form-control" placeholder="0" min="0" required>
+        </div>
+        
+        <div class="col-md-1">
+          <label class="form-label small text-muted">Months</label>
+          <input type="number" id="ageMonths" class="form-control" placeholder="0" min="0" max="11" required>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Contact <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+            <input type="text" id="contact" class="form-control" placeholder="09XX XXX XXXX" required>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Sickness/Complaint</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-clipboard-pulse"></i></span>
+            <input type="text" id="sick" class="form-control" placeholder="Chief complaint">
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Doctor Name <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+            <input type="text" id="doctorName" class="form-control" placeholder="Dr. Name" required>
+          </div>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label small text-muted">Patient Type <span class="text-danger">*</span></label>
+          <select id="doctorType" class="form-select" required>
+            <option value="">Select Type</option>
+            <option value="Pedia">Pedia (0-18 years)</option>
+            <option value="Adult">Adult (19+ years)</option>
+          </select>
+        </div>
+        
+        <div class="col-md-3 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-primary flex-fill" id="submitBtn">
+            <i class="bi bi-check-lg"></i> Add Record
+          </button>
+          <button type="button" id="btnCancelEdit" class="btn btn-cancel" onclick="cancelEdit()" style="display:none;">
+            <i class="bi bi-x-lg"></i> Cancel
+          </button>
+        </div>
+        
+      </form>
+    </div>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0"><i class="bi bi-funnel-fill me-2"></i>Search & Filters</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        
+        <div class="col-lg-3 col-md-6">
+          <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search name, address, doctor...">
+          </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+          <select id="filterType" class="form-select">
+            <option value="">All Types</option>
+            <option value="Pedia">Pedia Only</option>
+            <option value="Adult">Adult Only</option>
+          </select>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+          <select id="filterMonth" class="form-select">
+            <option value="">All Months</option>
+          </select>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+          <select id="filterYear" class="form-select">
+            <option value="">All Years</option>
+          </select>
+        </div>
+        
+        <div class="col-lg-2 col-md-6">
+          <select id="sortOption" class="form-select">
+            <option value="">Sort by Date (Newest)</option>
+            <option value="dateOld">Date (Oldest)</option>
+            <option value="firstAZ">First Name A-Z</option>
+            <option value="lastAZ">Last Name A-Z</option>
+            <option value="ageYoung">Age (Youngest)</option>
+            <option value="ageOld">Age (Oldest)</option>
+          </select>
+        </div>
+        
+        <div class="col-lg-1 col-md-12 d-flex gap-2">
+          <button class="btn btn-success w-100" onclick="exportToExcel()" title="Export to Excel">
+            <i class="bi bi-file-earmark-excel"></i>
+          </button>
+          <button class="btn btn-warning w-100" onclick="backupData()" title="Backup Data">
+            <i class="bi bi-download"></i>
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card table-container">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Patient Records</h5>
+      <span class="badge bg-secondary" id="showingCount">Showing 0 records</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover" id="patientTableMain">
+        <thead>
+          <tr>
+            <th width="100">Date</th>
+            <th>Patient Info</th>
+            <th>Address</th>
+            <th width="80">Age</th>
+            <th>Contact</th>
+            <th>Sickness</th>
+            <th>Doctor</th>
+            <th width="100">Type</th>
+            <th width="150">Action</th>
+          </tr>
+        </thead>
+        <tbody id="patientTable">
+          <tr>
+            <td colspan="9" class="text-center py-5 text-muted">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+              Loading records...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
-<div class="col-auto d-flex gap-2">
-<button type="submit" class="btn btn-primary">Add Record</button>
-<button type="button" id="btnCancelEdit" class="btn btn-cancel" onclick="cancelEdit()">Cancel</button>
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-person-vcard me-2"></i>Patient Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="viewModalContent">
+        <!-- Dynamic content -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="printRecord()">
+          <i class="bi bi-printer me-1"></i>Print
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
-</form>
-
-<!-- ================= FILTERS ================= -->
-<div class="row mb-3 g-2">
-
-<div class="col-md-3">
-<input type="text" id="searchInput" class="form-control" placeholder="Search Name, Date, Address, Doctor">
-</div>
-
-<div class="col-md-2">
-<select id="filterType" class="form-select">
-<option value="">All Doctors</option>
-<option value="Pedia">Pedia</option>
-<option value="Adult">Adult</option>
-</select>
-</div>
-
-<div class="col-md-2">
-<select id="filterMonth" class="form-select">
-<option value="">All Months</option>
-</select>
-</div>
-
-<div class="col-md-2">
-<select id="filterYear" class="form-select">
-<option value="">All Years</option>
-</select>
-</div>
-
-<div class="col-md-2">
-<select id="sortOption" class="form-select">
-<option value="">No Sorting</option>
-<option value="firstAZ">First Name A-Z</option>
-<option value="lastAZ">Last Name A-Z</option>
-</select>
-</div>
-
-<div class="col-md-2 d-flex gap-2">
-<button class="btn btn-success" onclick="exportToExcel()">Excel</button>
-<button class="btn btn-warning" onclick="backupData()">Backup</button>
-</div>
-
-</div>
-
-<!-- ================= TABLE ================= -->
-<div class="table-responsive">
-<table class="table table-bordered table-striped bg-white">
-<thead class="table-primary">
-<tr>
-<th>Date</th>
-<th>Name</th>
-<th>Address</th>
-<th>Age</th>
-<th>Contact</th>
-<th>Sickness</th>
-<th>Doctor</th>
-<th>Type</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="patientTable"></tbody>
-</table>
-</div>
-
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  onSnapshot, 
+  deleteDoc, 
+  doc, 
+  updateDoc, 
+  getDocs,
+  query,
+  orderBy 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 /* ================= FIREBASE CONFIG ================= */
@@ -138,7 +741,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCzmst_7XakIWC47G-XiI2wti3iJ6h1tos",
   authDomain: "klinika-ni-san-nicolas.firebaseapp.com",
   projectId: "klinika-ni-san-nicolas",
-  storageBucket: "klinika-ni-san-nicolas.firebasestorage.app",
+  storageBucket: "klinika-ni-san-nicolas.appspot.com",
   messagingSenderId: "247172585082",
   appId: "1:247172585082:web:231c83f07b83767e840dc3"
 };
@@ -147,191 +750,527 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+/* ================= VARIABLES ================= */
+let editId = null;
+let patientsData = [];
+let filteredData = [];
+let viewModalInstance = null;
+
 /* ================= AUTH ================= */
-onAuthStateChanged(auth,user=>{
-if(!user) window.location.href="index.html";
+onAuthStateChanged(auth, user => {
+  if (!user) window.location.href = "index.html";
 });
 
-window.logout = async()=>{
-await signOut(auth);
-window.location.href="index.html";
+window.logout = async () => {
+  try {
+    await signOut(auth);
+    window.location.href = "index.html";
+  } catch (error) {
+    showToast('Logout failed: ' + error.message, 'error');
+  }
 };
 
-/* ================= VARIABLES ================= */
-let editId=null;
-let patientsData=[];
-let filteredData=[];
-
-const table=document.getElementById("patientTable");
+/* ================= INITIALIZATION ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date
+  document.getElementById('date').valueAsDate = new Date();
+  
+  // Initialize modal
+  viewModalInstance = new bootstrap.Modal(document.getElementById('viewModal'));
+  
+  // Populate filters
+  populateFilters();
+  
+  // Real-time listener
+  setupRealtimeListener();
+});
 
 /* ================= POPULATE MONTH + YEAR ================= */
-function populateFilters(){
+function populateFilters() {
+  const monthSelect = document.getElementById("filterMonth");
+  const months = ["January", "February", "March", "April", "May", "June", 
+                  "July", "August", "September", "October", "November", "December"];
+  
+  months.forEach((m, i) => {
+    let opt = document.createElement("option");
+    opt.value = i + 1;
+    opt.textContent = m;
+    monthSelect.appendChild(opt);
+  });
 
-const monthSelect=document.getElementById("filterMonth");
-monthSelect.innerHTML=`<option value="">All Months</option>`;
+  const yearSelect = document.getElementById("filterYear");
+  const currentYear = new Date().getFullYear();
+  for (let y = 2020; y <= currentYear + 1; y++) {
+    let opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
+}
 
-const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+/* ================= REALTIME LISTENER ================= */
+function setupRealtimeListener() {
+  const q = query(collection(db, "patients"), orderBy("date", "desc"));
+  
+  onSnapshot(q, snap => {
+    patientsData = [];
+    snap.forEach(d => patientsData.push({ id: d.id, ...d.data() }));
+    updateStatistics();
+    renderFiltered();
+  }, error => {
+    console.error("Listener error:", error);
+    showToast('Error loading data', 'error');
+  });
+}
 
-months.forEach((m,i)=>{
-let opt=document.createElement("option");
-opt.value=i+1;
-opt.textContent=m;
-monthSelect.appendChild(opt);
+/* ================= STATISTICS ================= */
+function updateStatistics() {
+  const today = new Date().toISOString().split('T')[0];
+  let todayCount = 0;
+  let pediaCount = 0;
+  let adultCount = 0;
+  
+  patientsData.forEach(p => {
+    if (p.date === today) todayCount++;
+    if (p.doctorType === 'Pedia') pediaCount++;
+    else if (p.doctorType === 'Adult') adultCount++;
+  });
+  
+  // Animate numbers
+  animateNumber('totalRecords', patientsData.length);
+  animateNumber('todayRecords', todayCount);
+  animateNumber('pediaCount', pediaCount);
+  animateNumber('adultCount', adultCount);
+}
+
+function animateNumber(id, target) {
+  const el = document.getElementById(id);
+  const current = parseInt(el.textContent) || 0;
+  const increment = target > current ? 1 : -1;
+  
+  if (current === target) return;
+  
+  const timer = setInterval(() => {
+    const newVal = parseInt(el.textContent) + increment;
+    el.textContent = newVal;
+    if (newVal === target) clearInterval(timer);
+  }, 20);
+}
+
+/* ================= FORM SUBMISSION ================= */
+patientForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  
+  const submitBtn = document.getElementById('submitBtn');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+  
+  const patient = {
+    date: document.getElementById('date').value,
+    name: document.getElementById('name').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    age: `${document.getElementById('ageYears').value} yr ${document.getElementById('ageMonths').value} mo`,
+    ageYears: parseInt(document.getElementById('ageYears').value) || 0,
+    ageMonths: parseInt(document.getElementById('ageMonths').value) || 0,
+    contact: document.getElementById('contact').value.trim(),
+    sick: document.getElementById('sick').value.trim(),
+    doctorName: document.getElementById('doctorName').value.trim(),
+    doctorType: document.getElementById('doctorType').value,
+    updatedAt: new Date()
+  };
+
+  try {
+    if (editId) {
+      await updateDoc(doc(db, "patients", editId), patient);
+      showToast('Patient record updated successfully!');
+    } else {
+      patient.createdAt = new Date();
+      await addDoc(collection(db, "patients"), patient);
+      showToast('New patient record added!');
+    }
+    
+    resetForm();
+  } catch (error) {
+    console.error("Save error:", error);
+    showToast('Error saving record: ' + error.message, 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalText;
+  }
 });
 
-const yearSelect=document.getElementById("filterYear");
-yearSelect.innerHTML=`<option value="">All Years</option>`;
-
-const startYear=2020;
-const currentYear=new Date().getFullYear()+1;
-
-for(let y=startYear;y<=currentYear;y++){
-let opt=document.createElement("option");
-opt.value=y;
-opt.textContent=y;
-yearSelect.appendChild(opt);
+/* ================= FILTER & RENDER ================= */
+function renderFiltered() {
+  let filtered = [...patientsData];
+  
+  // Search filter
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  if (search) {
+    filtered = filtered.filter(p => 
+      p.name?.toLowerCase().includes(search) ||
+      p.address?.toLowerCase().includes(search) ||
+      p.doctorName?.toLowerCase().includes(search) ||
+      p.date?.includes(search) ||
+      p.sick?.toLowerCase().includes(search)
+    );
+  }
+  
+  // Type filter
+  const typeFilter = document.getElementById('filterType').value;
+  if (typeFilter) {
+    filtered = filtered.filter(p => p.doctorType === typeFilter);
+  }
+  
+  // Month filter
+  const monthFilter = document.getElementById('filterMonth').value;
+  if (monthFilter) {
+    filtered = filtered.filter(p => {
+      const dateParts = p.date.split('-');
+      return dateParts.length >= 2 && parseInt(dateParts[1]) === parseInt(monthFilter);
+    });
+  }
+  
+  // Year filter
+  const yearFilter = document.getElementById('filterYear').value;
+  if (yearFilter) {
+    filtered = filtered.filter(p => p.date?.startsWith(yearFilter));
+  }
+  
+  // Sorting
+  const sort = document.getElementById('sortOption').value;
+  switch(sort) {
+    case 'dateOld':
+      filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+      break;
+    case 'firstAZ':
+      filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      break;
+    case 'lastAZ':
+      filtered.sort((a, b) => {
+        const lastA = (a.name || '').split(' ').pop();
+        const lastB = (b.name || '').split(' ').pop();
+        return lastA.localeCompare(lastB);
+      });
+      break;
+    case 'ageYoung':
+      filtered.sort((a, b) => (a.ageYears || 0) - (b.ageYears || 0));
+      break;
+    case 'ageOld':
+      filtered.sort((a, b) => (b.ageYears || 0) - (a.ageYears || 0));
+      break;
+    default:
+      // Default sort by date desc (already done by query)
+      break;
+  }
+  
+  filteredData = filtered;
+  renderTable(filtered);
 }
+
+function renderTable(data) {
+  const table = document.getElementById("patientTable");
+  document.getElementById('showingCount').textContent = `Showing ${data.length} records`;
+  
+  if (data.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center py-5 text-muted">
+          <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+          <p class="mb-1">No records found</p>
+          <small>Try adjusting your filters or add a new record</small>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  table.innerHTML = data.map((p, index) => `
+    <tr class="fade-in" style="animation-delay: ${index * 0.05}s">
+      <td class="text-nowrap">${formatDate(p.date)}</td>
+      <td>
+        <strong>${escapeHtml(p.name)}</strong>
+      </td>
+      <td>${escapeHtml(p.address)}</td>
+      <td>${p.age}</td>
+      <td>${escapeHtml(p.contact)}</td>
+      <td>${escapeHtml(p.sick) || '<span class="text-muted">-</span>'}</td>
+      <td>${escapeHtml(p.doctorName)}</td>
+      <td>
+        <span class="badge-type badge-${p.doctorType?.toLowerCase() || 'adult'}">
+          ${p.doctorType || 'Unknown'}
+        </span>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-light btn-sm text-primary" onclick="viewPatient('${p.id}')" title="View">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="btn btn-edit btn-sm" onclick="editPatient('${p.id}')" title="Edit">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deletePatient('${p.id}')" title="Delete">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
 }
 
-/* ================= ADD / UPDATE ================= */
-patientForm.addEventListener("submit",async e=>{
-e.preventDefault();
-
-const patient={
-date:date.value,
-name:name.value,
-address:address.value,
-age:ageYears.value+" yr "+ageMonths.value+" mo",
-contact:contact.value,
-sick:sick.value,
-doctorName:doctorName.value,
-doctorType:doctorType.value
+/* ================= ACTIONS ================= */
+window.viewPatient = async function(id) {
+  const patient = patientsData.find(p => p.id === id);
+  if (!patient) return;
+  
+  document.getElementById('viewModalContent').innerHTML = `
+    <div class="row g-3">
+      <div class="col-md-6">
+        <p class="mb-1 text-muted small">Full Name</p>
+        <p class="fw-bold">${escapeHtml(patient.name)}</p>
+      </div>
+      <div class="col-md-6">
+        <p class="mb-1 text-muted small">Date</p>
+        <p class="fw-bold">${formatDate(patient.date)}</p>
+      </div>
+      <div class="col-md-6">
+        <p class="mb-1 text-muted small">Age</p>
+        <p class="fw-bold">${patient.age}</p>
+      </div>
+      <div class="col-md-6">
+        <p class="mb-1 text-muted small">Contact</p>
+        <p class="fw-bold">${escapeHtml(patient.contact)}</p>
+      </div>
+      <div class="col-12">
+        <p class="mb-1 text-muted small">Address</p>
+        <p class="fw-bold">${escapeHtml(patient.address)}</p>
+      </div>
+      <div class="col-md-6">
+        <p class="mb-1 text-muted small">Doctor</p>
+        <p class="fw-bold">${escapeHtml(patient.doctorName)} (${patient.doctorType})</p>
+      </div>
+      <div class="col-md-6">
+        <p class="mb-1 text-muted small">Sickness/Complaint</p>
+        <p class="fw-bold">${escapeHtml(patient.sick) || '-'}</p>
+      </div>
+    </div>
+  `;
+  
+  viewModalInstance.show();
 };
 
-if(editId){
-await updateDoc(doc(db,"patients",editId),patient);
-}else{
-await addDoc(collection(db,"patients"),patient);
-}
-
-patientForm.reset();
-editId=null;
-});
-
-/* ================= REALTIME ================= */
-onSnapshot(collection(db,"patients"),snap=>{
-patientsData=[];
-snap.forEach(d=>patientsData.push({id:d.id,...d.data()}));
-populateFilters();
-renderFiltered();
-});
-
-/* ================= FILTER + SEARCH ================= */
-function renderFiltered(){
-
-let filtered=[...patientsData];
-
-let search=searchInput.value.toLowerCase();
-
-filtered=filtered.filter(p=>
-p.name.toLowerCase().includes(search)||
-p.date.includes(search)||
-p.address.toLowerCase().includes(search)||
-p.doctorName.toLowerCase().includes(search)
-);
-
-if(filterType.value)
-filtered=filtered.filter(p=>p.doctorType===filterType.value);
-
-if(filterMonth.value)
-filtered=filtered.filter(p=>parseInt(p.date.split("-")[1])===parseInt(filterMonth.value));
-
-if(filterYear.value)
-filtered=filtered.filter(p=>p.date.split("-")[0]===filterYear.value);
-
-if(sortOption.value==="firstAZ")
-filtered.sort((a,b)=>a.name.localeCompare(b.name));
-
-if(sortOption.value==="lastAZ")
-filtered.sort((a,b)=>a.name.split(" ").pop().localeCompare(b.name.split(" ").pop()));
-
-filteredData=filtered;
-
-table.innerHTML="";
-
-filtered.forEach(p=>{
-table.innerHTML+=`
-<tr>
-<td>${p.date}</td>
-<td>${p.name}</td>
-<td>${p.address}</td>
-<td>${p.age}</td>
-<td>${p.contact}</td>
-<td>${p.sick||""}</td>
-<td>${p.doctorName}</td>
-<td>${p.doctorType}</td>
-<td>
-<button class="btn btn-warning btn-sm" onclick="editPatient('${p.id}')">Edit</button>
-<button class="btn btn-danger btn-sm" onclick="deletePatient('${p.id}')">Delete</button>
-</td>
-</tr>`;
-});
-
-recordCount.textContent=filtered.length;
-}
-
-/* ================= EXPORT FILTERED ================= */
-window.exportToExcel=function(){
-
-let html=`<table border="1">
-<tr>
-<th>Date</th><th>Name</th><th>Address</th><th>Age</th><th>Contact</th><th>Sickness</th><th>Doctor</th><th>Type</th>
-</tr>`;
-
-filteredData.forEach(p=>{
-html+=`<tr>
-<td>${p.date}</td>
-<td>${p.name}</td>
-<td>${p.address}</td>
-<td>${p.age}</td>
-<td>${p.contact}</td>
-<td>${p.sick||""}</td>
-<td>${p.doctorName}</td>
-<td>${p.doctorType}</td>
-</tr>`;
-});
-
-html+="</table>";
-
-let blob=new Blob([html],{type:"application/vnd.ms-excel"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="Filtered_Patient_Records.xls";
-a.click();
+window.editPatient = function(id) {
+  const patient = patientsData.find(p => p.id === id);
+  if (!patient) return;
+  
+  // Fill form
+  document.getElementById('date').value = patient.date;
+  document.getElementById('name').value = patient.name;
+  document.getElementById('address').value = patient.address;
+  
+  // Parse age
+  const ageMatch = patient.age?.match(/(\d+)\s*yr\s*(\d+)\s*mo/);
+  if (ageMatch) {
+    document.getElementById('ageYears').value = ageMatch[1];
+    document.getElementById('ageMonths').value = ageMatch[2];
+  }
+  
+  document.getElementById('contact').value = patient.contact;
+  document.getElementById('sick').value = patient.sick || '';
+  document.getElementById('doctorName').value = patient.doctorName;
+  document.getElementById('doctorType').value = patient.doctorType;
+  
+  // Set edit mode
+  editId = id;
+  document.getElementById('formMode').textContent = 'Edit Mode';
+  document.getElementById('formMode').className = 'badge bg-warning';
+  document.getElementById('submitBtn').innerHTML = '<i class="bi bi-check-lg"></i> Update Record';
+  document.getElementById('btnCancelEdit').style.display = 'inline-block';
+  
+  // Scroll to form
+  document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+  showToast('Editing patient record. Make changes and click Update.');
 };
 
-/* ================= BACKUP ================= */
-window.backupData=async function(){
-let snap=await getDocs(collection(db,"patients"));
-let data=[];
-snap.forEach(d=>data.push({id:d.id,...d.data()}));
-let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="Backup_"+new Date().toISOString().replace(/[:T]/g,"-")+".json";
-a.click();
+window.deletePatient = async function(id) {
+  const patient = patientsData.find(p => p.id === id);
+  const name = patient ? patient.name : 'this record';
+  
+  if (!confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) return;
+  
+  try {
+    await deleteDoc(doc(db, "patients", id));
+    showToast('Patient record deleted successfully');
+  } catch (error) {
+    console.error("Delete error:", error);
+    showToast('Error deleting record', 'error');
+  }
 };
 
-/* ================= EVENTS ================= */
-searchInput.addEventListener("input",renderFiltered);
-filterType.addEventListener("change",renderFiltered);
-filterMonth.addEventListener("change",renderFiltered);
-filterYear.addEventListener("change",renderFiltered);
-sortOption.addEventListener("change",renderFiltered);
+window.cancelEdit = function() {
+  resetForm();
+  showToast('Edit cancelled');
+};
+
+function resetForm() {
+  patientForm.reset();
+  editId = null;
+  document.getElementById('date').valueAsDate = new Date();
+  document.getElementById('formMode').textContent = 'New Record';
+  document.getElementById('formMode').className = 'badge bg-primary';
+  document.getElementById('submitBtn').innerHTML = '<i class="bi bi-check-lg"></i> Add Record';
+  document.getElementById('btnCancelEdit').style.display = 'none';
+}
+
+/* ================= EXPORT & BACKUP ================= */
+window.exportToExcel = function() {
+  if (filteredData.length === 0) {
+    showToast('No data to export', 'error');
+    return;
+  }
+  
+  let html = `<table border="1">
+    <thead>
+      <tr style="background:#4f46e5;color:white;">
+        <th>Date</th><th>Name</th><th>Address</th><th>Age</th><th>Contact</th>
+        <th>Sickness</th><th>Doctor</th><th>Type</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  
+  filteredData.forEach(p => {
+    html += `<tr>
+      <td>${p.date}</td>
+      <td>${p.name}</td>
+      <td>${p.address}</td>
+      <td>${p.age}</td>
+      <td>${p.contact}</td>
+      <td>${p.sick || ''}</td>
+      <td>${p.doctorName}</td>
+      <td>${p.doctorType}</td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table>';
+  
+  const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Patient_Records_${new Date().toISOString().split('T')[0]}.xls`;
+  a.click();
+  
+  showToast(`Exported ${filteredData.length} records to Excel`);
+};
+
+window.backupData = async function() {
+  try {
+    const snap = await getDocs(collection(db, "patients"));
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    const backup = {
+      exportDate: new Date().toISOString(),
+      totalRecords: data.length,
+      patients: data
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `Klinika_Backup_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    a.click();
+    
+    showToast('Backup downloaded successfully');
+  } catch (error) {
+    console.error("Backup error:", error);
+    showToast('Backup failed', 'error');
+  }
+};
+
+/* ================= UTILITY FUNCTIONS ================= */
+function formatDate(dateString) {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const id = 'toast-' + Date.now();
+  
+  const colors = {
+    success: 'bg-success',
+    error: 'bg-danger',
+    warning: 'bg-warning text-dark'
+  };
+  
+  const icons = {
+    success: 'check-circle-fill',
+    error: 'x-circle-fill',
+    warning: 'exclamation-triangle-fill'
+  };
+  
+  const html = `
+    <div id="${id}" class="toast align-items-center ${colors[type]} text-white border-0 mb-2" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="bi bi-${icons[type]} me-2"></i>${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  `;
+  
+  container.insertAdjacentHTML('beforeend', html);
+  const toastEl = document.getElementById(id);
+  const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+  toast.show();
+  
+  toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+}
+
+/* ================= EVENT LISTENERS ================= */
+document.getElementById('searchInput').addEventListener('input', debounce(renderFiltered, 300));
+document.getElementById('filterType').addEventListener('change', renderFiltered);
+document.getElementById('filterMonth').addEventListener('change', renderFiltered);
+document.getElementById('filterYear').addEventListener('change', renderFiltered);
+document.getElementById('sortOption').addEventListener('change', renderFiltered);
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 /* ================= DARK MODE ================= */
-window.toggleDarkMode=function(){
-document.body.classList.toggle("dark-mode");
+window.toggleDarkMode = function() {
+  document.body.classList.toggle("dark-mode");
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('darkMode', isDark);
+  document.getElementById('darkModeText').textContent = isDark ? 'Light' : 'Dark';
+  showToast(isDark ? 'Dark mode enabled' : 'Light mode enabled', 'info');
+};
+
+// Load dark mode preference
+if (localStorage.getItem('darkMode') === 'true') {
+  document.body.classList.add('dark-mode');
+  document.getElementById('darkModeText').textContent = 'Light';
+}
+
+window.printRecord = function() {
+  window.print();
 };
 
 </script>
